@@ -13,7 +13,7 @@ enum CoreDataEntity: String {
 }
 
 enum ReminderAttribute: String {
-    case dueDate, isDone, title
+    case scheduleDate, isDone, title
 }
 
 extension NSManagedObjectContext {
@@ -22,19 +22,19 @@ extension NSManagedObjectContext {
         let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: CoreDataEntity.Reminder.rawValue)
         do {
             let objects = try self.fetch(fetchRequest)
-            let tasks = objects.map { UserReminder($0) }
-            return tasks
+            let reminders = objects.map { UserReminder($0) }
+            return reminders
         } catch {
             print("Could not fetch. \(error), \(error.localizedDescription)")
             return []
         }
     }
 
-    func saveReminder(title: String, dueDate: Date, isDone: Bool = false) -> UserReminder {
+    func saveReminder(title: String, scheduleDate: Date, isDone: Bool = false) -> UserReminder {
         let entity = NSEntityDescription.entity(forEntityName: CoreDataEntity.Reminder.rawValue, in: self)!
         let object = NSManagedObject(entity: entity, insertInto: self)
         object.setValue(title, forKeyPath: ReminderAttribute.title.rawValue)
-        object.setValue(dueDate, forKeyPath: ReminderAttribute.dueDate.rawValue)
+        object.setValue(scheduleDate, forKeyPath: ReminderAttribute.scheduleDate.rawValue)
         object.setValue(isDone, forKeyPath: ReminderAttribute.isDone.rawValue)
 
         do {

@@ -10,14 +10,14 @@ import CoreData
 import UserNotifications
 
 enum Filter {
-    case completed, pending
+    case reminderDone, reminderPending
 }
 
 class RemindersViewModel {
 
     fileprivate var reminders: [UserReminder] = []
-    fileprivate var filteredreminders: [UserReminder] = []
-    fileprivate var filter: Filter = .pending
+    var filteredreminders: [UserReminder] = []
+    fileprivate var filter: Filter = .reminderPending
 
 
     lazy var managedContext: NSManagedObjectContext? = {
@@ -25,24 +25,24 @@ class RemindersViewModel {
         return appDelegate?.persistentContainer.viewContext
     }()
 
-    func task(at indexPath: IndexPath) -> UserReminder {
+    func reminder(at indexPath: IndexPath) -> UserReminder {
         return filteredreminders[indexPath.row]
     }
 
     func delete(at indexPath: IndexPath) {
-        let deletedTask = filteredreminders[indexPath.row]
-       // deleteObject(deletedTask)
+        let deletedReminder = filteredreminders[indexPath.row]
+        deleteObject(deletedReminder)
         filteredreminders.remove(at: indexPath.row)
-        if let index = reminders.firstIndex(where: { $0.id == deletedTask.id }) {
+        if let index = reminders.firstIndex(where: { $0.id == deletedReminder.id }) {
             reminders.remove(at: index)
         }
     }
 
-    func update(at indexPath: IndexPath, isCompleted: Bool) {
-        filteredreminders[indexPath.row].isDone = isCompleted
-        //update(filteredreminders[indexPath.row])
+    func update(at indexPath: IndexPath, isDone: Bool) {
+        filteredreminders[indexPath.row].isDone = isDone
+        update(filteredreminders[indexPath.row])
         if let index = reminders.firstIndex(where: { $0.id == filteredreminders[indexPath.row].id }) {
-            reminders[index].isDone = isCompleted
+            reminders[index].isDone = isDone
         }
         applyFilter(filter)
     }
@@ -50,9 +50,9 @@ class RemindersViewModel {
     func applyFilter(_ filter: Filter) {
         self.filter = filter
         switch filter {
-        case .completed:
+        case .reminderDone:
             filteredreminders = reminders.filter { $0.isDone }
-        case .pending:
+        case .reminderPending:
             filteredreminders = reminders.filter { !$0.isDone }
         }
     }
@@ -66,12 +66,11 @@ extension RemindersViewModel {
         applyFilter(filter)
     }
 
-    func save(title: String, dueDate: Date, isDone: Bool = false) {
-        let task = managedContext?.saveReminder(title: title, dueDate: dueDate, isDone: isDone)
-        guard let t = task else { return }
-        setLocalPushNotification(t)
-
-        reminders.append(t)
+    func save(title: String, scheduleDate: Date, isDone: Bool = false) {
+        let reminder = managedContext?.saveReminder(title: title, scheduleDate: scheduleDate, isDone: isDone)
+        guard let r = reminder else { return }
+        setLocalPushNotification(r)
+        reminders.append(r)
         applyFilter(filter)
     }
 
