@@ -8,8 +8,8 @@
 import UIKit
 
 enum ReminderAction: String {
-    case markIncomplete = "Mark as incomplete"
-    case markCompleted = "Mark as complete"
+    case markIncomplete = "Umnark and remainder re-open"
+    case markCompleted = "Mark remainder as done"
     case delete = "Delete"
     case cancel = "Cancel"
 }
